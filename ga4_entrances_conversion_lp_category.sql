@@ -3,12 +3,12 @@ with date_range as (
   select
     '20230901' as start_date,
     '20231005' as end_date),
+  
 --FDE
-
 page as (select
             
        event_date
-       ,replace(split((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,'/')[safe_offset(2)],'www.','') as shop_name
+      ,replace(split((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,'/')[safe_offset(2)],'www.','') as shop_name
       ,user_pseudo_id
       ,concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id
       ,event_name
@@ -25,7 +25,7 @@ page as (select
     from
       `bigquery.analytics_123456789.events_*`,date_range
       where 
-      _TABLE_SUFFIX between start_date and end_date
+      _table_suffix between start_date and end_date
       and event_name='page_view' 
       and (select value from unnest(event_params) where event_name = 'page_view' and key = 'entrances').int_value>0
       group by 1,2,3,4,5,6,7,8
@@ -48,7 +48,7 @@ page as (select
     from
       `bigquery.analytics_123456789.events_*`,date_range
       where 
-      _TABLE_SUFFIX between start_date and end_date
+      _table_suffix between start_date and end_date
       and event_name='page_view' 
       and (select value from unnest(event_params) where event_name = 'page_view' and key = 'entrances').int_value>0
       group by 1,2,3,4,5,6,7,8)
