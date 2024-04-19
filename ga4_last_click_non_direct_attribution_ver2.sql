@@ -8,7 +8,7 @@ WITH conversions AS
       timestamp_micros(min(event_timestamp)) as session_start_timestamp,
       sum(ecommerce.purchase_revenue) as revenue,
       max(ecommerce.transaction_id) as transaction_id
-    FROM `isg-dwh-bigquery.analytics_292798251.events_*` 
+    FROM `bigquery.analytics_123456789.events_*` 
     WHERE event_name = "purchase" AND _table_suffix BETWEEN "20230801" AND "20230901"
     GROUP BY 1,2
   ),
@@ -22,7 +22,7 @@ AS
       first_value(collected_traffic_source.manual_medium)  OVER (PARTITION BY user_pseudo_id, (SELECT value.int_value FROM unnest(event_params) WHERE key = 'ga_session_id') ORDER BY event_timestamp) as medium,
       first_value(collected_traffic_source.gclid)  OVER (PARTITION BY user_pseudo_id, (SELECT value.int_value FROM unnest(event_params) WHERE key = 'ga_session_id') ORDER BY event_timestamp) as gclid,
       timestamp_micros(event_timestamp) as session_start_timestamp
-      FROM `isg-dwh-bigquery.analytics_292798251.events_*` WHERE event_name NOT IN ("session_start", "first_visit") AND _table_suffix BETWEEN "20230901" AND "20230901") 
+      FROM `bigquery.analytics_123456789.events_*` WHERE event_name NOT IN ("session_start", "first_visit") AND _table_suffix BETWEEN "20230901" AND "20230901") 
       GROUP BY 1,2,3,4
 ),
  
@@ -32,7 +32,7 @@ precedingSessions AS
       (SELECT value.int_value FROM unnest(event_params) WHERE key = 'ga_session_id') as old_ga_session_id,  
       first_value(collected_traffic_source.manual_medium)  OVER (PARTITION BY user_pseudo_id, (SELECT value.int_value FROM unnest(event_params) WHERE key = 'ga_session_id') ORDER BY event_timestamp) as old_medium,
       first_value(collected_traffic_source.gclid)  OVER (PARTITION BY user_pseudo_id, (SELECT value.int_value FROM unnest(event_params) WHERE key = 'ga_session_id') ORDER BY event_timestamp) as gclid
-      FROM `isg-dwh-bigquery.analytics_292798251.events_*` WHERE event_name NOT IN ("session_start", "first_visit") AND _table_suffix BETWEEN "20230801" AND "20230901")
+      FROM `bigquery.analytics_123456789.events_*` WHERE event_name NOT IN ("session_start", "first_visit") AND _table_suffix BETWEEN "20230801" AND "20230901")
 ),
  
 interactions AS (
@@ -61,6 +61,9 @@ interactions AS (
   select source,medium,count(distinct ga_session_id)
   from currentSessions
   group by 1,2
+
+
+
   /*
 SELECT
   interactions.medium, sum(revenue) as revenue, count(distinct transaction_id) as conversions 
