@@ -33,7 +33,7 @@ events as (
     ) as first_traffic_source,
     event_timestamp
   from
-    `isg-dwh-bigquery.analytics_292798251.events_*`,date_range,lookup_range
+    `bigquery.analytics_123456789.events_*`,date_range,lookup_range
   where
     (_table_suffix >= lookup_start_date and _table_suffix <= lookup_end_date)
     and event_name not in ('session_start', 'first_visit')
