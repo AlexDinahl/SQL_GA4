@@ -1,3 +1,9 @@
-SELECT *, DATETIME(TIMESTAMP_MILLIS(last_modified_time),'Europe/Berlin') as last_modified
-FROM `analytics_292798251.__TABLES__`
-where table_id LIKE 'events_2%'
+--Get table info and date modified
+
+SELECT
+  *,
+  DATETIME(TIMESTAMP_MILLIS(last_modified_time),'Europe/Berlin') AS last_modified
+FROM
+  `analytics_123456789.__TABLES__`
+WHERE
+  table_id LIKE 'events_2%'
