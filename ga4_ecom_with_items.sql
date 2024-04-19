@@ -20,6 +20,6 @@ event_date
 ,i.price as item_price
 ,i.item_revenue as item_revenue
 from 
-`isg-dwh-bigquery.analytics_292798251.events_*`,unnest(event_params) as e, unnest(items) as i
+`bigquery.analytics_123456789.events_*`,unnest(event_params) as e, unnest(items) as i
 where _table_suffix between '20230101' and '20230111' and event_name='purchase' and ecommerce.transaction_id is not null
 ;
