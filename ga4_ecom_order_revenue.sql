@@ -14,7 +14,7 @@ conversions as
       sum(ecommerce.purchase_revenue) as revenue,
       sum(ecommerce.tax_value) as tax_value,
       sum(ecommerce.shipping_value) as shipping_value
-    from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range 
+    from `bigquery.analytics_2123456789.events_*`,date_range 
     where event_name = "purchase" and _table_suffix between start_date and end_date
     group by 1,2,3,4
   )
