@@ -158,7 +158,7 @@ ua as (select distinct
                   else 'other' end as event_name
 
 
-                from `isg-dwh-bigquery.206405060.ga_sessions_*`,date_range, unnest(hits) as h --206405060
+                from `bigquery.123456789.ga_sessions_*`,date_range, unnest(hits) as h --206405060
                 where _table_suffix between start_date and end_date
                 and h.eventInfo. eventCategory is not null),
 ga4 as (select
@@ -166,7 +166,7 @@ ga4 as (select
             ,event_name
     --event_params.key    
 from
-    `isg-dwh-bigquery.analytics_292798251.events_*`,date_range,unnest(event_params) as event_params  --292798251
+    `bigquery.analytics_123456789.events_*`,date_range,unnest(event_params) as event_params  --292798251
 where
     _table_suffix between start_date and end_date
 group by 1,2)
@@ -186,7 +186,7 @@ select
             ,(select value.string_value from unnest(event_params) where key = "smartfit_action") as smartfit_action
             --,event_params.key    
 from
-    `isg-dwh-bigquery.analytics_292798251.events_*`--,unnest(event_params) as event_params
+    `bigquery.analytics_123456789.events_*`--,unnest(event_params) as event_params
 where
     _table_suffix between '20231008' and '20231008'
     and event_name='smartfit'
