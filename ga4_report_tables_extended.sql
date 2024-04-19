@@ -33,6 +33,9 @@ create temp function ChannelGrouping(csource string,medium string,campaign strin
     end
 );
 
+
+
+
 /*
 create temp table client_id as (
   SELECT if(replace(lower(client_name),lower(replace(client_url,'www.','')),'')='fr'
@@ -40,7 +43,7 @@ create temp table client_id as (
   ,lower(replace(client_url,'www.',''))) as website
   ,client_src_id
   ,client_id --distinct client_id,lower(replace(client_url,'www.','')) as url
-  FROM `isg-dwh-bigquery.dwh.dim_client` 
+  FROM `bigquery.dwh.dim_client` 
   where company_code='ISG' and vertical<>'MARKETPLACE' 
   and is_b2b=0 and business_unit is not null and client_src_id<>'BUN');
 */
@@ -66,7 +69,7 @@ sessions as ( select
                         if(event_name = 'page_view',1,0) as pageviews,
                         if(event_name='add_to_cart',1,0) as adds_to_cart,
                         concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) as session_id
-from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+from `bigquery.analytics_123456789.events_*`,date_range
 where _table_suffix
 between start_date and end_date
 ),
@@ -74,7 +77,7 @@ iov as (
   select order_date_day as visit_date
         ,count(distinct order_number) as orders
         ,sum(iov) as order_value
-from `isg-dwh-bigquery.dwh.iov_products`,date_range
+from `bigquery.dwh.iov_products`,date_range
 where order_date_day
 between parse_date('%Y%m%d',start_date) and parse_date('%Y%m%d',start_date)
 and client_id=44
@@ -109,7 +112,7 @@ select
   'GA' as source,
  count( distinct
       concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value)) AS session_count
-from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+from `bigquery.analytics_123456789.events_*`,date_range
 where _table_suffix between start_date  and end_date
 group by 1,2;
 
@@ -134,7 +137,7 @@ events as (
     cast(min(event_timestamp)/pow(10,6) as int64) as event_start_time,
     cast(max(event_timestamp)/pow(10,6) as int64) as end_time,
     
-  from  `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+  from  `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date  and end_date 
   --and device.web_info.hostname in ('www.fahrrad.de','hilfe.fahrrad.de')
   group by 1,2,3,4
@@ -166,7 +169,7 @@ events as (
     --device.web_info.hostname,
     concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) as session_id,
     device.category as device_category
-  from  `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+  from  `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date  and end_date 
   --and device.web_info.hostname in ('www.fahrrad.de','hilfe.fahrrad.de')
   group by 1,2,3,4
@@ -207,7 +210,7 @@ events as (
     if(geo.region='','unknown',geo.region)  as region,
     if(geo.city='','unknown',geo.city) as city,
     concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) as session_id,
-  from  `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+  from  `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date  and end_date
 group by 1,2,3,4,5,6
 )
@@ -239,7 +242,7 @@ products as (select distinct
               ,product_src_id
               ,article_id
               ,cast(article_src_id as numeric) as article_src_id
-              from `isg-dwh-bigquery.dwh.product_details` 
+              from `bigquery.dwh.product_details` 
               where company_id=1 ),
 items as  (
         select 
@@ -256,7 +259,7 @@ items as  (
               sum(if(ecommerce.transaction_id<>'(not set)',items.quantity,0)) as item_quantity_purchased,
              -- round(sum(ifnull(item_revenue,0)),2) as item_revenue
 
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,date_range,unnest(items) as items
+ from `bigquery.analytics_123456789.events_*` ,date_range,unnest(items) as items
  where items.item_id<>'(not set)' and _table_suffix between start_date and end_date
     and event_name not like '%_promotion'
 group by 1,2,3,4
@@ -272,7 +275,7 @@ iov_products as (
                         quantity_ordered
                         ,iov as net_sales_price
                         ,row_number() over (partition by order_date_day,product_id,product_src_id,article_id order by order_number) as rn
-from `isg-dwh-bigquery.dwh.iov_products`,date_range
+from `bigquery.dwh.iov_products`,date_range
 where order_date_day
 between parse_date('%Y%m%d',start_date) and parse_date('%Y%m%d',end_date)
 and client_id=44)
@@ -309,7 +312,7 @@ with date_range as (
     '20231025' as start_date,
     '20231025' as end_date),
 products as (select distinct product_id,article_id,product_src_id,cast(article_src_id as numeric) as article_src_id
-from `isg-dwh-bigquery.dwh.product_details`
+from `bigquery.dwh.product_details`
 where company_id=1),
 client as (select distinct client_id
                           ,client_src_id
@@ -318,7 +321,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -338,7 +341,7 @@ items as  (
               sum(if(ecommerce.transaction_id<>'(not set)',items.quantity,0)) as item_quantity_purchased,
               round(sum(ifnull(item_revenue,0)),2) as item_revenue
  
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,date_range,unnest(items) as items
+ from `bigquery.analytics_123456789.events_*` ,date_range,unnest(items) as items
  where items.item_id<>'(not set)' and _table_suffix between start_date and end_date
        and event_name not like '%_promotion'
 group by 1,2,3,4,5,6,7
@@ -355,7 +358,7 @@ iov_products as (
                         quantity_ordered
                         ,iov as net_sales_price
                         ,row_number() over (partition by order_date_day,product_id,product_src_id,article_id order by order_number) as rn
-from `isg-dwh-bigquery.dwh.iov_products`,date_range
+from `bigquery.dwh.iov_products`,date_range
 where order_date_day
 between parse_date('%Y%m%d',start_date) and parse_date('%Y%m%d',end_date)
 and client_id=44)
@@ -403,7 +406,7 @@ with date_range as (
     '20231025' as start_date,
     '20231025' as end_date),
 products as (select distinct product_id,product_src_id,product_name,brand_name,level1,level2,level3,level4
-from `isg-dwh-bigquery.dwh.product_details`
+from `bigquery.dwh.product_details`
 where company_id=1),
 client as (select distinct client_id
                           ,if(substr(client_name, length(client_url)-3)='',lower(client_url)
@@ -411,7 +414,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -430,7 +433,7 @@ items as  (
               --sum(if(ecommerce.transaction_id<>'(not set)',items.quantity,0)) as item_quantity_purchased,
               --round(sum(ifnull(item_revenue,0)),2) as item_revenue
 
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,date_range,unnest(items) as items
+ from `bigquery.analytics_123456789.events_*` ,date_range,unnest(items) as items
  where items.item_id<>'(not set)' and _table_suffix between start_date and end_date
        and event_name not like '%_promotion' and instr(device.web_info.hostname,'www.',1)>0
 group by 1,2,3
@@ -447,7 +450,7 @@ iov_products as (
                         quantity_ordered,
                         iov,
                         iov_gp,
-from `isg-dwh-bigquery.dwh.iov_products`,date_range
+from `bigquery.dwh.iov_products`,date_range
 where order_date_day
 between parse_date('%Y%m%d',start_date) and parse_date('%Y%m%d',end_date)
 and client_id=44),
@@ -504,7 +507,7 @@ with date_range as (
     '20231119' as end_date),
 products as (select distinct product_id,product_name,article_id,level1,level2,level3,level4,brand_name
                     ,product_src_id,cast(article_src_id as numeric) as article_src_id
-from `isg-dwh-bigquery.dwh.product_details`
+from `bigquery.dwh.product_details`
 where company_id=1),
 client as (select distinct client_id
                           ,client_src_id
@@ -513,7 +516,7 @@ client as (select distinct client_id
                           ,vertical
                           ,vertical_region
                           ,client_group
-from `isg-dwh-bigquery.dwh.dim_client`
+from `bigquery.dwh.dim_client`
 where company_id=1 and client_url is not null
      and vertical is not null
      and is_sales_partner=0
@@ -533,7 +536,7 @@ items as  (
               sum(if(ecommerce.transaction_id<>'(not set)',items.quantity,0)) as item_quantity_purchased,
               round(sum(ifnull(item_revenue,0)),2) as item_revenue
   
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,date_range,unnest(items) as items
+ from `bigquery.analytics_123456789.events_*` ,date_range,unnest(items) as items
  where items.item_id<>'(not set)' and _table_suffix between start_date and end_date
        and event_name not like '%_promotion'
 group by 1,2,3,4,5,6
@@ -550,7 +553,7 @@ iov_products as (
                         quantity_ordered
                         ,iov
                         ,iov_gp
-from `isg-dwh-bigquery.dwh.iov_products`,date_range
+from `bigquery.dwh.iov_products`,date_range
 where order_date_day
 between parse_date('%Y%m%d',start_date) and parse_date('%Y%m%d',end_date)
 and client_id=44),
@@ -642,7 +645,7 @@ group by 1
 */
 
 
---V_MARKETING_ONLINE_VISIT_DAILY
+--V_MARKETING_ONLINE_VISIT_DAILY (does not wor without attribution)
 
 with date_range as (
   select
@@ -655,7 +658,7 @@ client as (select distinct client_id
                           ,vertical
                           ,vertical_region
                           ,client_group
-            from `isg-dwh-bigquery.dwh.dim_client`
+            from `bigquery.dwh.dim_client`
             where company_id=1 and client_url is not null
                   and vertical is not null
                   and is_sales_partner=0
@@ -670,304 +673,6 @@ client as (select distinct client_id
               --collected_traffic_source.gclid as gclid,
               count(distinct concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value)) visit_cnt
   
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,date_range
+ from `bigquery.analytics_123456789.events_*` ,date_range
  where _table_suffix between start_date and end_date and device.web_info.hostname like ('%fahrrad%')
 group by 1,2
---no client_id
---113726
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-select distinct
-       device.web_info.hostname,
-       if(instr(device.web_info.hostname,'www.',1)>0,device.web_info.hostname,regexp_extract(device.web_info.hostname,r'\.([a-z]+\.[a-z]{2})$')) as instr_
-from `isg-dwh-bigquery.analytics_292798251.events_*`
-where _table_suffix
-between '20231114' and '20231114';
-
-*/
-
-
---,pd.product_name as product_name
---,ifnull(level4,level3) as level0
---,level1
---,level2
---,level3
---,level4
---,dc.client_src_id
---,pd.brand_name
---,dc.vertical
---,dc.vertical_region
---,dc.client_group
---,ifnull(fin.product_id,pd.product_id) as product_id
---left join products as pd on fin.product_src_id=pd.product_src_id
---left join products as pdc on itm.product_src_id=pd.product_src_id
---left join `isg-dwh-bigquery.dwh.dim_client` as dc on fin.client_id=dc.client_id and dc.company_id=1 
-
-
-
-
-
-
-
-/*
-SELECT DD.DAY_DATE AS ORDER_DATE,
-                   ART.PRODUCT_ID,
-                   SUM(ST.in_stock_total) QUANTITY
-            FROM `isg-dwh-bigquery.dwh.product_stock_revenue` ST
-            INNER JOIN `isg-dwh-bigquery.dwh.dim_date` DD ON DD.DAY_DATE BETWEEN ST.stock_date AND ST.stock_date
-            INNER JOIN `isg-dwh-bigquery.dwh.dim_article` ART
-                    ON ART.ARTICLE_ID = ST.ARTICLE_ID AND ART.COMPANY_ID = 1
-            WHERE /* ST.STOCK_LOCATION_ID IN (1, 5, 6, 8, 9, 10, 12) we need all where quantity > 0
-              AND */ 
-              
-              /* ST.in_stock_total > 0
-              
-              AND DD.DAY_DATE BETWEEN CURRENT_DATE - 7 AND CURRENT_DATE + 1
-            GROUP BY DD.DAY_DATE,
-                     ART.PRODUCT_ID;
-*/
-
-
-
-
-
-
---'desktop','mobile','tablet','smart tv'
-
-
-
-/*
-select product_id,article_id,article_src_id
-from `isg-dwh-bigquery.dwh.dim_article`
-where company_id=1
-limit 100;  
-
-*/
-
-/*
-same in the db
-
-   select product_id,article_id,meta_client_src_id,to_date(cast(order_date_id as varchar(8)), 'YYYYMMDD') as visit_date
-   ,count(distinct order_number) as orders,sum(quantity_ordered) as total_product_ordered
-  from dwh_pl.v_iov_products
-  where client_id=44
-  and order_date_id >='20231025' and order_date_id<'20231026'
-  group by 1,2,3,4
-  order by product_id
-   ;
-
-*/
-
-
-
-
---V_PRODUCT_ORDERS
-
---ORDER_DATE,PRODUCT_NAME,LEVEL0,LEVEL1,LEVEL2,LEVEL3,LEVEL4,CLIENT_SRC_ID,BRAND_NAME,VERTICAL,VERTICAL_REGION,CLIENT_GROUP,LANGUAGE_NAME,COUNTRY_NAME,PRODUCT_ID,	PRODUCT_SRC_ID,PRICE_RANGE,ORDERS,PRODUCT_VIEWS,ORDERS_AVG,PRODUCT_VIEWS_AVG,STOCK_LEVEL,IOV,IOV_GP
-
-
-
-
-
-
-
-
-
-/*
-
---Attribution to the previous actions
-
-create temp function GetParamValue(params any type, target_key string)
-as (
-  (select `value`from unnest(params) where key = target_key limit 1)
-);
-
-
-with tot as (
-with items_attr as (
-select 
-              cast(event_date as date format 'YYYYMMDD') as visit_date,
-              concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) as sid,
-              event_timestamp,
-               items.item_id as product_src_id, 
-              GetParamValue(item_params, 'item_variation').int_value as article_src_id,
-              if(ecommerce.transaction_id='(not set)',null,ecommerce.transaction_id) as order_number,
-              sum(if(event_name='view_item_list',1,0)) as item_list_views, 
-              sum(if(event_name='select_item',1,0)) as item_list_clicks,
-              sum(if(event_name='view_item',1,0)) as item_pdp_views,
-              sum(if(event_name='add_to_cart',1,0)) as item_adds_to_cart,
-              sum(if(ecommerce.transaction_id<>'(not set)',1,0)) as purchases,
-              sum(if(ecommerce.transaction_id<>'(not set)',items.quantity,0)) as item_quantity_purchased,
-              round(sum(ifnull(item_revenue,0)),2) as item_revenue
-
- from `isg-dwh-bigquery.analytics_292798251.events_*` ,unnest(items) as items
- where items.item_id<>'(not set)' and _table_suffix between '20231025' and '20231025'
- and items.item_id='488480'
-group by 1,2,3,4,5,6)
-select * except(event_timestamp),case when order_number is null and article_src_id is not null 
-      and (item_pdp_views>0 or item_adds_to_cart>0)
-      then
-      first_value(order_number ignore nulls) over (partition by sid, article_src_id order by event_timestamp desc) else order_number end as o_num
-from items_attr
-)
-select visit_date
-      ,product_src_id
-      ,article_src_id
-      ,ifnull(order_number,o_num) as order_number
-      ,sum(item_list_views) as item_list_views
-      ,sum(item_list_clicks) as item_list_clicks
-      ,sum(item_pdp_views) as item_pdp_views
-      ,sum(item_adds_to_cart) as item_adds_to_cart
-      ,sum(purchases) as purchases
-      ,sum(item_quantity_purchased) as item_quantity_purchased
-      ,sum(item_revenue) as item_revenue
-      from tot
-      group by 1,2,3,4
-
-
-*/
-
-
-
-
-
-/*
-items_fin as  (select 
-                       extract(date from order_date) as visit_date
-                      ,product_src_id
-                      ,cast(article_src_id as numeric) as article_src_id
-                      ,product_name
-                      ,count(distinct order_number) as purchases
-                      ,sum(if(shipped_amount is null,0,shipped_amount)) as amount
-                      ,sum(if(total_item_net_rev is null,0,total_item_net_rev)) as net_revevenue
-                      ,sum(if(shipping_revenue is null,0,shipping_revenue)) as shipping_revenue
-                      from `isg-dwh-bigquery.dwh.financial` as fin,date_range
-                      where order_date between datetime(concat(parse_date('%Y%m%d',start_date),' 00:00:00')) 
-                                  and datetime(concat(parse_date('%Y%m%d',end_date), ' 23:59:59'))
-                                  and product_src_id is not null and article_src_id is not null
-                                  and client_id=44
-                      group by 1,2,3,4)
-*/
-
-
-
-
-
-
-
-
-
-/*
---itm.product_src_id,
---itm.article_src_id,
---ifnull(fin.product_src_id,itm.product_src_id) as product_src_id,
---ifnull(fin.article_src_id,itm.article_src_id) as article_src_id,
---sum(item_list_views) as item_list_views,
---sum(item_list_clicks) as item_list_clicks,
-sum(item_pdp_views) as item_pdp_views,
-sum(item_adds_to_cart) as item_adds_to_cart,
-ifnull(sum(fin.purchases),0) as purchases
-,ifnull(round(sum(fin.amount),0),0) as amount
-,ifnull(round(sum(fin.net_revevenue),2),0) as net_revevenue
-from iov_products,unnest(iov_products) as fin--items as itm
-full outer join items as itm on itm.visit_date=fin.orders.visit_date 
---on itm.visit_date=fin.visit_date and itm.product_src_id=fin.product_src_id and itm.article_src_id=fin.article_src_id
---where product_src_id='1332508'
---group by 1--,2
---having purchases>0
-order by item_pdp_views desc--purchases desc
-
---*/
-
-
-
-
-
-
-
-/*
-select 
-                                order_date
-                                ,order_number as transaction_id
-                                ,left(sku,instr('_',sku)-1) as product_src_id
-                                ,article_src_id
-                                ,lin.quantity_ordered as product_quantity
-                                ,article_price as product_price
-                                ,round(net_shipping_cost * (1+tax_rate/100),2) as transaction_shipping
-                                from `isg-dwh-bigquery.dwh.fct_order` ord
-                                inner join  `isg-dwh-bigquery.dwh.fct_orderline` lin
-                                using(id)
-                                left join `isg-dwh-bigquery.dwh.dim_article` using(article_id)
-                                where order_date between concat('2023-10-25',' 00:00:00') 
-                                      and concat('2023-10-25', ' 23:59:59')
-                                      and 
-                                      ord.client_id=44
-                                      and left(sku,instr('_',sku)-1)='1332508'
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-product_src_id
-,sum(item_list_views) as item_list_views
-,sum(item_list_clicks) as item_list_clicks
-,sum(item_pdp_views) as item_pdp_views
-,sum(item_adds_to_cart) as item_adds_to_cart
-,sum(purchases) as purchases
-,sum(item_quantity_purchased) as item_quantity_purchased
-,sum(item_revenue) as item_revenue
-from items
-group by 1
-order by item_pdp_views desc
---where item_id='1485347'
---where item_adds_to_cart=1
---*/
-
-
-
-/*
-
-with date_range as (
-  select
-    '20231005' as start_date,
-    '20231005' as end_date)
-select 
-        ,product_src_id
-        ,article_src_id
-        ,sum(if(shipped_amount is null,0,shipped_amount)) as amount
-        ,sum(if(total_item_net_rev is null,0,total_item_net_rev)) as net_rev
-        ,sum(if(shipping_revenue is null,0,shipping_revenue)) as shipping_revenue
-        from `isg-dwh-bigquery.dwh.financial` as fin,date_range
-*/
-
