@@ -10,8 +10,8 @@ with steps as (
                                           ,device.devicecategory as device
                                           ,if(h.eCommerceAction.action_type="6",5,if(h.eCommerceAction.action_type="3",-2,h.eCommerceAction.step)) as step
                                         from
-                                          `isg-dwh-bigquery.123456789.ga_sessions_*` as m, unnest (hits) h
-                                          --inner join (select concat(fullvisitorid,'.',visitid) as sid from `isg-dwh-bigquery.123456789.ga_sessions_*`, unnest (hits) h
+                                          `bigquery.123456789.ga_sessions_*` as m, unnest (hits) h
+                                          --inner join (select concat(fullvisitorid,'.',visitid) as sid from `bigquery.123456789.ga_sessions_*`, unnest (hits) h
                                           --where _table_suffix between '20230807' and '20230807' and h.eCommerceAction.action_type="3")
                                           --on concat(m.fullvisitorid,'.',m.visitid)=concat(fullvisitorid,'.',visitid)
                                         where _table_suffix between '20230807' and '20230807'
@@ -36,7 +36,7 @@ with final as (
                                           ,device.devicecategory as device
                                           ,if(h.eCommerceAction.action_type="6",5,if(h.eCommerceAction.action_type="3",-2,h.eCommerceAction.step)) as step
                                         from
-                                          `isg-dwh-bigquery.123456789.ga_sessions_*` as m, unnest (hits) h
+                                          `bigquery.123456789.ga_sessions_*` as m, unnest (hits) h
                                         where _table_suffix between '20230807' and '20230807'
                                         --and h.eCommerceAction.action_type in ("3","5","6")
                                         group by 1,2,3,4,5,6
@@ -107,7 +107,7 @@ with final as (
                                           ,device.devicecategory as device
                                           ,if(h.eCommerceAction.action_type="6",5,h.eCommerceAction.step) as step
                                         from
-                                          `isg-dwh-bigquery.123456789.ga_sessions_*`, unnest (hits) h
+                                          `bigquery.123456789.ga_sessions_*`, unnest (hits) h
                                         where _table_suffix between '20230807' and '20230807'
                                         and h.eCommerceAction.action_type in ("5","6")
                                         --and concat(fullvisitorid,'.',visitid)="1011605653348667862.1688195542"
@@ -196,7 +196,7 @@ with checkout as (
                                           else null end
                                           as checkout_step_index
                                         from
-                                          `isg-dwh-bigquery.123456789.ga_sessions_*`,date_range, unnest (hits) h
+                                          `bigquery.123456789.ga_sessions_*`,date_range, unnest (hits) h
                                         where _table_suffix between start_date and end_date
                                         and h.eCommerceAction.action_type in ("5","6")
                                         --and concat(fullvisitorid,'.',visitid)="1011605653348667862.1688195542"
