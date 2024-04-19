@@ -12,6 +12,9 @@ as (
        when regexp_contains(target_key,r'instagram|facebook|twitter|t\.co|reddit|youtube|linkedin|pinterest|gutefrage|snapchat|blog\.naver\.com|vk\.com|xing|blogger|instapaper|wer\-weiss\-was|yelp|wordpress|researchgate|disqus') then 2
        else 0 end
 );
+
+
+
 --GETFULLVISITORS
 
 /*
@@ -39,7 +42,7 @@ select
     datetime(timestamp_micros(max(event_timestamp)), reporting_timezone) as visit_time_end,
     if(instr(device.web_info.hostname,'www.',1)=0,device.web_info.hostname,regexp_extract(device.web_info.hostname,r'www.([a-z]+\.[a-z]{2,}|[a-z]{2,}\.[a-z]+\.[a-z]{2,})$')) as source_name,
     device.web_info.hostname
-  from `isg-dwh-bigquery.analytics_263765711.events_*`,date_range
+  from `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date
   and not regexp_contains(device.web_info.hostname,r'staging|development|appspot')
 group by 1,2,4,5,6,7,8,9,10,11,13,14
@@ -77,7 +80,7 @@ select
       row_number() over (partition by concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) order by event_timestamp asc) AS page_order,  
     --GetParamValue(event_params, 'page_location').string_value
     if(instr(device.web_info.hostname,'www.',1)=0,device.web_info.hostname,regexp_extract(device.web_info.hostname,r'www.([a-z]+\.[a-z]{2,}|[a-z]{2,}\.[a-z]+\.[a-z]{2,})$')) as source_name
-    from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+    from `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date
   and GetParamValue(event_params, 'environment').string_value='Production' --not regexp_contains(device.web_info.hostname,r'staging|development')
   and event_name in ('page_view','purchase') --and coalesce(GetParamValue(event_params, 'page_type').string_value) is null
@@ -106,7 +109,7 @@ select
     if(event_name='add_to_cart',1,0) as stat,
     format_timestamp('%Y-%m-%d %H:%M:%S',datetime(timestamp_micros(event_timestamp), reporting_timezone)) as times,
     row_number() over (partition by user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value order by event_timestamp) as bas_pos
-from `isg-dwh-bigquery.analytics_292798251.events_*`,unnest(items) as items,date_range
+from `bigquery.analytics_123456789.events_*`,unnest(items) as items,date_range
 where _table_suffix between start_date and end_date
   and event_name in('items_in_cart') --'add_to_cart',
   --and items.item_name like '%Sommet 297%'
@@ -137,7 +140,7 @@ select distinct
     string_agg( distinct     ifnull(if(collected_traffic_source.manual_term='(not provided)',null,collected_traffic_source.manual_term),'') limit 1) as keyword,
     regexp_extract(device.web_info.hostname,r'\.([a-z]+\.[a-z]{2,})$') as source_name
 
-from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+from `bigquery.analytics_123456789.events_*`,date_range
 where _table_suffix between start_date and end_date
 and not regexp_contains(device.web_info.hostname,r'staging|development')
 group by 1,5
@@ -163,7 +166,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -187,7 +190,7 @@ select distinct
 
 
              --GetParamValue(event_params, 'kameleoon_segment').string_value as action 
-from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+from `bigquery.analytics_123456789.events_*`,date_range
 where _table_suffix between start_date and end_date
 and not regexp_contains(device.web_info.hostname,r'staging|development')
 and not  regexp_contains(event_name,r'first|start|engage|view_promotion|view_item|view_search|web|items_in_cart|scroll|_loaded|checkout_option|items_in_cart|non-ecommerce|_buffering|_complete|_progress|_seek|kameleoon|view_item_list') 
@@ -202,9 +205,6 @@ group by 1,2,3,4,5
 
 
 */
-
---/([^\/]+)\/ - ideally takes www.fahrrad.de
---https://(.*\.[a-z]{2,})\
 
 
 
@@ -223,7 +223,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -235,7 +235,7 @@ select
     ecommerce.transaction_id as transaction_id,
     --if(instr(device.web_info.hostname,'www.',1)>0,device.web_info.hostname,regexp_extract(device.web_info.hostname,r'\.([a-z]+\.[a-z]{2})$')) as hostname
     client_id
-from `isg-dwh-bigquery.analytics_292798251.events_*` as ga,date_range
+from `bigquery.analytics_123456789.events_*` as ga,date_range
 left join client as cl 
 on if(instr(ga.device.web_info.hostname,'www.',1)>0,ga.device.web_info.hostname,concat('www.',regexp_extract(ga.device.web_info.hostname,r'\.([a-z]+\.[a-z]{2})$')))=cl.client_url
 where _table_suffix between start_date and end_date
@@ -265,7 +265,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -277,7 +277,7 @@ select
     regexp_extract(GetParamValue(event_params, 'page_referrer').string_value,r'\/\/([^\/]+)') as url,
     SearchEngineAndSocial(regexp_extract(GetParamValue(event_params, 'page_referrer').string_value,r'\/([^\/]+)\/')) as search_engine,
     client_id
-from `isg-dwh-bigquery.analytics_292798251.events_*` as ga,date_range
+from `bigquery.analytics_123456789.events_*` as ga,date_range
 left join client as cl 
 on if(instr(ga.device.web_info.hostname,'www.',1)>0,ga.device.web_info.hostname,concat('www.',regexp_extract(ga.device.web_info.hostname,r'\.([a-z]+\.[a-z]{2,})$')))=cl.client_url
 where _table_suffix between start_date and end_date
@@ -308,7 +308,7 @@ client as (select distinct client_id
                             ,vertical
                             ,vertical_region
                             ,client_group
-from `isg-dwh-bigquery.dwh.dim_client` 
+from `bigquery.dwh.dim_client` 
 where company_id=1 and client_url is not null 
      and vertical is not null
      and is_sales_partner=0
@@ -321,7 +321,7 @@ select distinct
     concat(user_pseudo_id,GetParamValue(event_params, 'ga_session_id').int_value) as sid,
     client_id
 
-from `isg-dwh-bigquery.analytics_292798251.events_*` as ga,date_range
+from `bigquery.analytics_123456789.events_*` as ga,date_range
 left join client as cl 
 on if(instr(ga.device.web_info.hostname,'www.',1)>0,ga.device.web_info.hostname,concat('www.',regexp_extract(ga.device.web_info.hostname,r'\.([a-z]+\.[a-z]{2})$')))=cl.client_url
 where _table_suffix between start_date and end_date
