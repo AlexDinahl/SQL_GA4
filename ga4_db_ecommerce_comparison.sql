@@ -19,7 +19,7 @@ select
                                    ,sum(if(total_items is null,0,total_items)) as amount
                                    ,round(sum(if(total_amount is null,0,total_amount)),2) as net_rev
                                    ,round(sum(if(shipment_amount is null,0,shipment_amount)),2) as shipment
-                                  from `isg-dwh-bigquery.dwh.fct_order` as fin,date_range
+                                  from `bigquery.dwh.fct_order` as fin,date_range
                                   where 
                                   order_date_day between parse_date('%Y%m%d',start_date)
                                    and parse_date('%Y%m%d',end_date)
@@ -34,7 +34,7 @@ ua_orders as (
                       ,sum(p.productQuantity) as amount
                       ,round(ifnull(sum(h.transaction.transactionRevenue)/pow(10,6),0),2) as revenue
                     
-                      from `isg-dwh-bigquery.206405060.ga_sessions_*`,  UNNEST(hits) as h,unnest(h.product) as p,date_range
+                      from `bigquery.123456789.ga_sessions_*`,  UNNEST(hits) as h,unnest(h.product) as p,date_range
                       where _table_suffix between start_date and end_date
                       and h.transaction.transactionId is not null
                  
@@ -55,7 +55,7 @@ select
       sum((select sum(item_revenue) as item_revenue from unnest(items))) as item_revenue,
       sum(ecommerce.tax_value) as tax_value,
       sum(ecommerce.shipping_value) as shipping_value
-    from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range 
+    from `bigquery.analytics_123456789.events_*`,date_range 
     where ecommerce.transaction_id  is not null and ecommerce.transaction_id<>'(not set)' --event_name = "purchase" 
     and _table_suffix between start_date and end_date
     group by 1,2,3,4
