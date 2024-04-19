@@ -1,9 +1,34 @@
 --To Get actual data you need to set a timezone as well
 --otherwise it will be UTC
   
-with date_range as (select format_date('%Y%m%d',date_sub(current_date(), interval 1 day)) as start_date),
-data_check as (select exists(select 1 from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range where _table_suffix between start_date and start_date) as condition)
-select parse_date('%Y%m%d',event_date) as date_event,* except(start_date,condition)
-from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range,data_check
-where condition=True and _table_suffix between start_date and start_date and 
-extract(hour from timestamp_micros(event_timestamp)) between 19 and 20  
+WITH
+  date_range AS (
+  SELECT
+    FORMAT_DATE('%Y%m%d',DATE_SUB(CURRENT_DATE(), INTERVAL 1 day)) AS start_date),
+  data_check AS (
+  SELECT
+    EXISTS(
+    SELECT
+      1
+    FROM
+      `bigquery.analytics_123456789.events_*`,
+      date_range
+    WHERE
+      _table_suffix BETWEEN start_date
+      AND start_date) AS condition)
+SELECT
+  PARSE_DATE('%Y%m%d',event_date) AS date_event,
+  * EXCEPT(start_date,
+    condition)
+FROM
+  `bigquery.analytics_123456789.events_*`,
+  date_range,
+  data_check
+WHERE
+  condition=TRUE
+  AND _table_suffix BETWEEN start_date
+  AND start_date
+  AND EXTRACT(hour
+  FROM
+    TIMESTAMP_MICROS(event_timestamp)) BETWEEN 19
+  AND 20
