@@ -26,9 +26,9 @@ menu as (select
        ,split(substr((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,
              instr((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,'/',1,3)),'?')[safe_offset(0)] as pagePath
             from
-      `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+      `bigquery.analytics_123456789.events_*`,date_range
       where 
-      _TABLE_SUFFIX between start_date and end_date and event_name = 'page_view')
+      _table_suffix between start_date and end_date and event_name = 'page_view')
 select case when pagePath='/fahrraeder/e-bikes/' then 'E-Bikes'
 when pagePath='/sale/fahrraeder/e-bikes/' then 'Sale %'
 when pagePath='/fahrraeder/e-bikes/e-bikes-trekking/' then 'E-Bikes Trekking'
