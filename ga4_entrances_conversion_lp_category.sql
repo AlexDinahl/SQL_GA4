@@ -36,7 +36,7 @@ page as (select
       (select
             
        event_date
-       ,replace(split((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,'/')[safe_offset(2)],'www.','') as shop_name
+      ,replace(split((select value from unnest(event_params) where key = 'page_location' limit 1).string_value,'/')[safe_offset(2)],'www.','') as shop_name
       ,user_pseudo_id
       ,concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id
       ,event_name
@@ -55,15 +55,15 @@ page as (select
 
 ),
 purchases as (select
-      cast(event_date as date format 'YYYYMMDD') as visit_date,
-      user_pseudo_id, 
-      concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id,
-      ecommerce.transaction_id as transaction_id,
-      timestamp_micros(min(event_timestamp)) as session_start_timestamp,
-      sum((select sum(item_revenue) as item_revenue from unnest(items))) as item_revenue,
-      sum(ecommerce.purchase_revenue) as revenue,
-      sum(ecommerce.tax_value) as tax_value,
-      sum(ecommerce.shipping_value) as shipping_value
+      cast(event_date as date format 'YYYYMMDD') as visit_date
+      ,user_pseudo_id
+      ,concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id
+      ,ecommerce.transaction_id as transaction_id
+      ,timestamp_micros(min(event_timestamp)) as session_start_timestamp
+      ,sum((select sum(item_revenue) as item_revenue from unnest(items))) as item_revenue
+      ,sum(ecommerce.purchase_revenue) as revenue
+      ,sum(ecommerce.tax_value) as tax_value
+      ,sum(ecommerce.shipping_value) as shipping_value
     from `bigquery.analytics_123456789.events_*`,date_range 
     where event_name = "purchase" and _table_suffix between start_date and end_date
     group by 1,2,3,4
@@ -72,22 +72,20 @@ purchases as (select
     union all (
 
       select
-      cast(event_date as date format 'YYYYMMDD') as visit_date,
-      user_pseudo_id, 
-      concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id,
-      ecommerce.transaction_id as transaction_id,
-      timestamp_micros(min(event_timestamp)) as session_start_timestamp,
-      sum((select sum(item_revenue) as item_revenue from unnest(items))) as item_revenue,
-      sum(ecommerce.purchase_revenue) as revenue,
-      sum(ecommerce.tax_value) as tax_value,
-      sum(ecommerce.shipping_value) as shipping_value
+      cast(event_date as date format 'YYYYMMDD') as visit_date
+      ,user_pseudo_id
+      ,concat(user_pseudo_id,'_',(select value from unnest(event_params) where key = 'ga_session_id' limit 1).int_value) as ga_session_id
+      ,ecommerce.transaction_id as transaction_id
+      ,timestamp_micros(min(event_timestamp)) as session_start_timestamp
+      ,sum((select sum(item_revenue) as item_revenue from unnest(items))) as item_revenue
+      ,sum(ecommerce.purchase_revenue) as revenue
+      ,sum(ecommerce.tax_value) as tax_value
+      ,sum(ecommerce.shipping_value) as shipping_value
     from `bigquery.analytics_123456789.events_*`,date_range 
     where event_name = "purchase" and _table_suffix between start_date and end_date
     group by 1,2,3,4
 
-    )
-    
-    
+    )  
     
     )
 
