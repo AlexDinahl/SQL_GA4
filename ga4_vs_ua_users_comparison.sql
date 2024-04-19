@@ -1,3 +1,5 @@
+--UA vsersus GA4 usesrs
+
 with date_range as (
   select
     '20230326' as start_date,
@@ -8,7 +10,7 @@ ua as (
                     ,concat(fullvisitorId,'.',visitId) as sid
                     ,(select cd.value from unnest(h.customDimensions) cd where cd.index = 12) as client_id
                     ,visitStartTime
-                  from `isg-dwh-bigquery.206405060.ga_sessions_*`, unnest(hits) as h, date_range
+                  from `bigquery.123456789.ga_sessions_*`, unnest(hits) as h, date_range
                   
                   where _table_suffix between start_date and end_date),
 ga as (
@@ -20,7 +22,7 @@ ga as (
     -- ga_session_id is the unix timestamp in seconds when the session started
     (select value.int_value from unnest(event_params) where key = 'ga_session_id') as session_start
   from
-    `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+    `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date
 
 )
