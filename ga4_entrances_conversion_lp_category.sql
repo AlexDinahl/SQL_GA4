@@ -23,7 +23,7 @@ page as (select
       ,(select value from unnest(event_params) where event_name = 'page_view' and key = 'entrances').int_value as is_entrance
      
     from
-      `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+      `bigquery.analytics_123456789.events_*`,date_range
       where 
       _TABLE_SUFFIX between start_date and end_date
       and event_name='page_view' 
@@ -46,7 +46,7 @@ page as (select
       ,(select value from unnest(event_params) where event_name = 'page_view' and key = 'entrances').int_value as is_entrance
      
     from
-      `isg-dwh-bigquery.analytics_256822186.events_*`,date_range
+      `bigquery.analytics_123456789.events_*`,date_range
       where 
       _TABLE_SUFFIX between start_date and end_date
       and event_name='page_view' 
@@ -64,7 +64,7 @@ purchases as (select
       sum(ecommerce.purchase_revenue) as revenue,
       sum(ecommerce.tax_value) as tax_value,
       sum(ecommerce.shipping_value) as shipping_value
-    from `isg-dwh-bigquery.analytics_292798251.events_*`,date_range 
+    from `bigquery.analytics_123456789.events_*`,date_range 
     where event_name = "purchase" and _table_suffix between start_date and end_date
     group by 1,2,3,4
     
@@ -81,7 +81,7 @@ purchases as (select
       sum(ecommerce.purchase_revenue) as revenue,
       sum(ecommerce.tax_value) as tax_value,
       sum(ecommerce.shipping_value) as shipping_value
-    from `isg-dwh-bigquery.analytics_256822186.events_*`,date_range 
+    from `bigquery.analytics_123456789.events_*`,date_range 
     where event_name = "purchase" and _table_suffix between start_date and end_date
     group by 1,2,3,4
 
