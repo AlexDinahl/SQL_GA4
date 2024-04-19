@@ -8,30 +8,6 @@ as (
   (select `value`from unnest(params) where key = target_key limit 1)
 );
 
-/*
-
-with date_range as (
-  select
-    '20231101' as start_date,
-    '20231119' as end_date),
-chains as (
-  select
-    cast(event_date as date format 'YYYYMMDD') as visit_date,
-    user_pseudo_id,
-    GetParamValue(event_params, 'ga_session_id').int_value as session_id,
-    string_agg(distinct ifnull(collected_traffic_source.manual_source,'(direct)'),',' ) as utm_source,
-    array_length(regexp_extract_all(string_agg(distinct ifnull(collected_traffic_source.manual_source,'(none)'),','), ",")) AS size,
-  from `bigquery.analytics_123456789.events_*`,date_range
-  where _table_suffix between start_date and end_date
-  --and user_pseudo_id='1243638799.1699126965'
-  group by 1,2,3
-  order by visit_date)
-  select visit_date--,user_pseudo_id,utm_source,size
-  ,if(split(utm_source,',')[safe_offset(size)]='(direct)' and size>0,split(utm_source,',')[safe_offset(size-1)],split(utm_source,',')[safe_offset(size)]) as last_click
-  ,count(distinct concat(user_pseudo_id,session_id)) as sessions
-  from chains
-  group by 1,2;
-*/
 
 
 with date_range as (
@@ -81,6 +57,32 @@ group by 1
 order by sessions desc;
 
 
+
+
+/*
+
+with date_range as (
+  select
+    '20231101' as start_date,
+    '20231119' as end_date),
+chains as (
+  select
+    cast(event_date as date format 'YYYYMMDD') as visit_date,
+    user_pseudo_id,
+    GetParamValue(event_params, 'ga_session_id').int_value as session_id,
+    string_agg(distinct ifnull(collected_traffic_source.manual_source,'(direct)'),',' ) as utm_source,
+    array_length(regexp_extract_all(string_agg(distinct ifnull(collected_traffic_source.manual_source,'(none)'),','), ",")) AS size,
+  from `bigquery.analytics_123456789.events_*`,date_range
+  where _table_suffix between start_date and end_date
+  --and user_pseudo_id='1243638799.1699126965'
+  group by 1,2,3
+  order by visit_date)
+  select visit_date--,user_pseudo_id,utm_source,size
+  ,if(split(utm_source,',')[safe_offset(size)]='(direct)' and size>0,split(utm_source,',')[safe_offset(size-1)],split(utm_source,',')[safe_offset(size)]) as last_click
+  ,count(distinct concat(user_pseudo_id,session_id)) as sessions
+  from chains
+  group by 1,2;
+*/
 
 
 
