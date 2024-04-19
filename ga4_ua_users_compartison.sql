@@ -28,8 +28,3 @@ select count(distinct fullvisitorId) as ua_users,count(distinct user_pseudo_id) 
 from ua
 left join ga
 on client_id = user_pseudo_id
-
-
---left join ga
-
---on client_id = user_pseudo_id
