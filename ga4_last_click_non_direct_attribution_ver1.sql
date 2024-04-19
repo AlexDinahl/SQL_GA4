@@ -34,7 +34,7 @@ events as (
       false
     ) as session_first_event
   from
-    `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+    `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date and
     event_name not in ('session_start', 'first_visit') qualify session_first_event = true
     
@@ -154,7 +154,7 @@ events as (
       false
     ) as session_first_event
   from
-    `isg-dwh-bigquery.analytics_292798251.events_*`,date_range
+    `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date and
     event_name not in ('session_start', 'first_visit') qualify session_first_event = true
     
