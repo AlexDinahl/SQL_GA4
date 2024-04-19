@@ -21,7 +21,7 @@ chains as (
     GetParamValue(event_params, 'ga_session_id').int_value as session_id,
     string_agg(distinct ifnull(collected_traffic_source.manual_source,'(direct)'),',' ) as utm_source,
     array_length(regexp_extract_all(string_agg(distinct ifnull(collected_traffic_source.manual_source,'(none)'),','), ",")) AS size,
-  from `isg-dwh-bigquery.analytics_123456789.events_*`,date_range
+  from `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date
   --and user_pseudo_id='1243638799.1699126965'
   group by 1,2,3
@@ -47,7 +47,7 @@ select distinct
         GetParamValue(event_params, 'ga_session_id').int_value as session_id,
         if(collected_traffic_source.manual_source is null and collected_traffic_source.gclid is not null,
                                                   'google',collected_traffic_source.manual_source) as utm_source
-  from `isg-dwh-bigquery.analytics_123456789.events_*`,date_range
+  from `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date),
 chains as (
 select visit_date
@@ -106,7 +106,7 @@ collected_traffic_source.manual_content as content,
 collected_traffic_source.gclid as gclid,
 collected_traffic_source.dclid as dclid,
 collected_traffic_source.srsltid  as srsltid
-  from `isg-dwh-bigquery.analytics_123456789.events_*`,date_range
+  from `bigquery.analytics_123456789.events_*`,date_range
   where _table_suffix between start_date and end_date)
 select if(page is null,0,1) as page,count(distinct session_id)
 from page
